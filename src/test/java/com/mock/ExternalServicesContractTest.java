@@ -25,7 +25,8 @@ class ExternalServicesContractTest {
     @Test
     void openApiEsValidoYContieneLosTresContratos() {
         var result = new io.swagger.v3.parser.OpenAPIV3Parser()
-                .readLocation("openapi/regula-external-services-v1.yaml", null, null);
+                .readLocation(java.nio.file.Path.of("openapi/regula-external-services-v1.yaml")
+                        .toAbsolutePath().toUri().toString(), null, null);
         assertThat(result.getMessages()).isEmpty();
         assertThat(result.getOpenAPI().getPaths()).containsKeys(
                 "/api/v1/identidades/{documento}",

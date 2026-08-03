@@ -19,7 +19,7 @@ services:
       - /tmp
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "--fail", "--cacert", "/run/secrets/academic-ca.crt", "https://mock-api:8443/actuator/health"]
+      test: ["CMD", "java", "-cp", "/app/health", "HealthCheck", "/run/secrets/academic-ca.crt", "https://mock-api:8443/actuator/health"]
       interval: 15s
       timeout: 5s
       retries: 5
