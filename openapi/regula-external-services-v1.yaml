@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: Regula External Services Academic Contract
+  version: 1.0.0
+  description: Contrato sintético para demostrar integraciones externas sin datos reales.
+servers:
+  - url: https://mock-api:8443
+security:
+  - ApiKey: []
+paths:
+  /api/v1/identidades/{documento}:
+    get:
+      operationId: obtenerIdentidad
+      parameters:
+        - $ref: '#/components/parameters/Documento'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Identidad sintética
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Identidad' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TransientError' }
+        '500': { $ref: '#/components/responses/TransientError' }
+        '503': { $ref: '#/components/responses/TransientError' }
+  /api/v1/sanciones/{documento}:
+    get:
+      operationId: consultarSanciones
+      parameters:
+        - $ref: '#/components/parameters/Documento'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Screening sintético de sanciones
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Sanciones' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TransientError' }
+        '500': { $ref: '#/components/responses/TransientError' }
+        '503': { $ref: '#/components/responses/TransientError' }
+  /api/v1/personas-expuestas/{documento}:
+    get:
+      operationId: consultarPersonaExpuesta
+      parameters:
+        - $ref: '#/components/parameters/Documento'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Screening PEP sintético
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PersonaExpuesta' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TransientError' }
+        '500': { $ref: '#/components/responses/TransientError' }
+        '503': { $ref: '#/components/responses/TransientError' }
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  parameters:
+    Documento:
+      name: documento
+      in: path
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 30 }
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: false
+      schema: { type: string, format: uuid }
+  headers:
+    CorrelationId:
+      schema: { type: string, format: uuid }
+  schemas:
+    Identidad:
+      type: object
+      required: [nombreCompleto, estadoDocumento, antecedentes]
+      properties:
+        nombreCompleto: { type: string, example: Persona Sintética }
+        estadoDocumento: { type: string, enum: [ACTIVO, INACTIVO] }
+        antecedentes: { type: boolean }
+    Sanciones:
+      type: object
+      required: [sancionado, fuente]
+      properties:
+        sancionado: { type: boolean }
+        fuente: { type: string, example: BCP_SIMULADO }
+    PersonaExpuesta:
+      type: object
+      required: [pep, nivelExposicion]
+      properties:
+        pep: { type: boolean }
+        nivelExposicion: { type: string, enum: [NINGUNO, MEDIO, ALTO] }
+    Error:
+      type: object
+      required: [codigo, mensaje, correlationId]
+      properties:
+        codigo: { type: string }
+        mensaje: { type: string }
+        correlationId: { type: string }
+  responses:
+    Unauthorized:
+      description: API Key ausente o inválida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Documento sintético no encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TransientError:
+      description: Error transitorio simulado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

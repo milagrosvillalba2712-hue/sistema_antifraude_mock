@@ -1,0 +1,28 @@
+services:
+  mock-api:
+    build: .
+    ports:
+      - "8443:8443"
+    environment:
+      MOCK_OPERATIONAL_API_KEY: ${MOCK_OPERATIONAL_API_KEY}
+      MOCK_ADMIN_API_KEY: ${MOCK_ADMIN_API_KEY}
+      SSL_KEYSTORE_PATH: file:/run/secrets/mock-api.p12
+      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD}
+      SSL_KEY_ALIAS: mock-api
+      MOCK_AUDIT_PATH: /var/lib/regula-mock/audit/events.jsonl
+    volumes:
+      - ./certificates/mock-api.p12:/run/secrets/mock-api.p12:ro
+      - ./certificates/academic-ca.crt:/run/secrets/academic-ca.crt:ro
+      - mock-audit:/var/lib/regula-mock/audit
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--cacert", "/run/secrets/academic-ca.crt", "https://mock-api:8443/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mock-audit:

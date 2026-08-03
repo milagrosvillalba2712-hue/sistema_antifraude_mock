@@ -1,0 +1,35 @@
+server:
+  port: 8443
+  ssl:
+    enabled: ${SSL_ENABLED:true}
+    key-store: ${SSL_KEYSTORE_PATH:file:/run/secrets/mock-api.p12}
+    key-store-password: ${SSL_KEYSTORE_PASSWORD}
+    key-store-type: PKCS12
+    key-alias: ${SSL_KEY_ALIAS:mock-api}
+
+spring:
+  application:
+    name: sistema-antifraude-mock
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+mock:
+  api:
+    operational-key: ${MOCK_OPERATIONAL_API_KEY}
+    admin-key: ${MOCK_ADMIN_API_KEY}
+  audit:
+    path: ${MOCK_AUDIT_PATH:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    com.mock: INFO
+    org.springframework.security: WARN

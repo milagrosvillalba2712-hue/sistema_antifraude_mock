@@ -1,0 +1,16 @@
+target/
+.env
+certificates/*.p12
+certificates/*.key
+certificates/*.csr
+certificates/*.crt
+*.log
+.tools-*.tmp
+.idea/
+.vscode/
+# Guías históricas locales; contienen rutas y credenciales demo obsoletas.
+GUIA_EJECUCION.md
+GUIA_TESTING.md
+guia_backend_sistema_antifraude_completo.md
+guia_frontend_sistema_antifraude_frontend.md
+guia_mock_sistema_antifraude_mock.md
