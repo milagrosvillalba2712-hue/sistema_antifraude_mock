@@ -27,6 +27,8 @@ public class ExternalServicesController {
     @GetMapping("/identidades/{documento}")
     public ResponseEntity<?> identity(@PathVariable String documento, HttpServletRequest request) {
         if ("invalid-json".equals(documento)) {
+            journal.record("IDENTIFICACIONES", documento,
+                    (String) request.getAttribute("correlationId"), 200, 0, "INVALID_JSON");
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body("{invalid-json");
         }
         return execute("IDENTIFICACIONES", documento, request,

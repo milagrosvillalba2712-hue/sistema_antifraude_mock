@@ -4,6 +4,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+if ($KeyStorePassword -match '[\$\s]') { throw 'KeyStorePassword no puede contener $ ni espacios para evitar interpolacion de Compose.' }
+if ($TrustStorePassword -match '[\$\s]') { throw 'TrustStorePassword no puede contener $ ni espacios.' }
+if ($KeyStorePassword -eq $TrustStorePassword) { throw 'Las contrasenas de keystore y truststore deben ser diferentes.' }
 $certDir = Join-Path $PSScriptRoot 'certificates'
 $backendCertDir = Join-Path (Split-Path $PSScriptRoot -Parent) 'sistema_antifraude_backend\certificates'
 New-Item -ItemType Directory -Force -Path $certDir, $backendCertDir | Out-Null
@@ -37,6 +40,11 @@ keytool -importcert -alias academic-ca -keystore $serverStore -storepass $KeySto
 keytool -importcert -alias mock-api -keystore $serverStore -storepass $KeyStorePassword -file $signedCert -noprompt
 keytool -importcert -alias academic-ca -storetype PKCS12 -keystore $trustStore `
     -storepass $TrustStorePassword -file $caCert -noprompt
+
+keytool -list -keystore $serverStore -storepass $KeyStorePassword -alias mock-api | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'No se pudo validar el keystore generado.' }
+keytool -list -keystore $trustStore -storepass $TrustStorePassword -alias academic-ca | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'No se pudo validar el truststore generado.' }
 
 Remove-Item -LiteralPath $caStore, $request, $signedCert -Force
 Write-Output "CA=$caCert"
