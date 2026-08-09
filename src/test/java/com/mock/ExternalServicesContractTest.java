@@ -31,7 +31,14 @@ class ExternalServicesContractTest {
         assertThat(result.getOpenAPI().getPaths()).containsKeys(
                 "/api/v1/identidades/{documento}",
                 "/api/v1/sanciones/{documento}",
-                "/api/v1/personas-expuestas/{documento}");
+                "/api/v1/personas-expuestas/{documento}",
+                "/api/v1/clientes/{documento}/perfil",
+                "/api/v1/clientes/{documento}/documentos",
+                "/api/v1/clientes/{documento}/historial-transaccional",
+                "/api/v1/screening-listas/{documento}",
+                "/api/v1/riesgo-pais/{codigoIso}",
+                "/api/v1/beneficiario-final/{ruc}",
+                "/api/v1/proveedores/estado");
     }
 
     @Test
@@ -47,7 +54,7 @@ class ExternalServicesContractTest {
                         .header("X-Correlation-Id", "11111111-1111-1111-1111-111111111111"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Correlation-Id", "11111111-1111-1111-1111-111111111111"))
-                .andExpect(jsonPath("$.nombreCompleto").value("Persona Sintética"));
+                .andExpect(jsonPath("$.nombreCompleto").value("Persona Sintética 100"));
         mvc.perform(get("/api/v1/sanciones/200").header("X-API-Key", "operational-test-key"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.sancionado").value(true));
         mvc.perform(get("/api/v1/personas-expuestas/300").header("X-API-Key", "operational-test-key"))
@@ -62,6 +69,28 @@ class ExternalServicesContractTest {
                 .andExpect(status().isServiceUnavailable());
         mvc.perform(get("/api/v1/sanciones/not-found").header("X-API-Key", "operational-test-key"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void contratosKycEnriquecidosParaDetalleDeAlerta() throws Exception {
+        mvc.perform(get("/api/v1/clientes/400/perfil").header("X-API-Key", "operational-test-key"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nivelRiesgo").value("CRITICO"))
+                .andExpect(jsonPath("$.judicialRegulatorio.pep").value(true))
+                .andExpect(jsonPath("$.judicialRegulatorio.sancionado").value(true));
+
+        mvc.perform(get("/api/v1/clientes/100/historial-transaccional?limit=15").header("X-API-Key", "operational-test-key"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cantidad").value(15))
+                .andExpect(jsonPath("$.transacciones.length()").value(15));
+
+        mvc.perform(get("/api/v1/screening-listas/200").header("X-API-Key", "operational-test-key"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultado").value("CON_COINCIDENCIAS"));
+
+        mvc.perform(get("/api/v1/riesgo-pais/HK").header("X-API-Key", "operational-test-key"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nivelRiesgo").value("ALTO"));
     }
 
     @Test

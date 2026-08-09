@@ -65,6 +65,144 @@ paths:
         '429': { $ref: '#/components/responses/TransientError' }
         '500': { $ref: '#/components/responses/TransientError' }
         '503': { $ref: '#/components/responses/TransientError' }
+  /api/v1/clientes/{documento}/perfil:
+    get:
+      operationId: obtenerPerfilCliente
+      parameters:
+        - $ref: '#/components/parameters/Documento'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Perfil KYC sintetico enriquecido
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PerfilCliente' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TransientError' }
+        '500': { $ref: '#/components/responses/TransientError' }
+        '503': { $ref: '#/components/responses/TransientError' }
+  /api/v1/clientes/{documento}/documentos:
+    get:
+      operationId: obtenerDocumentosCliente
+      parameters:
+        - $ref: '#/components/parameters/Documento'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Metadata sintetica de documentos
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentosCliente' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TransientError' }
+        '500': { $ref: '#/components/responses/TransientError' }
+        '503': { $ref: '#/components/responses/TransientError' }
+  /api/v1/clientes/{documento}/historial-transaccional:
+    get:
+      operationId: obtenerHistorialTransaccional
+      parameters:
+        - $ref: '#/components/parameters/Documento'
+        - $ref: '#/components/parameters/CorrelationId'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 50, default: 15 }
+      responses:
+        '200':
+          description: Historial transaccional sintetico
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HistorialTransaccional' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TransientError' }
+        '500': { $ref: '#/components/responses/TransientError' }
+        '503': { $ref: '#/components/responses/TransientError' }
+  /api/v1/screening-listas/{documento}:
+    get:
+      operationId: consultarScreeningListas
+      parameters:
+        - $ref: '#/components/parameters/Documento'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Screening sintetico en listas ampliadas
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScreeningListas' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TransientError' }
+        '500': { $ref: '#/components/responses/TransientError' }
+        '503': { $ref: '#/components/responses/TransientError' }
+  /api/v1/riesgo-pais/{codigoIso}:
+    get:
+      operationId: consultarRiesgoPais
+      parameters:
+        - name: codigoIso
+          in: path
+          required: true
+          schema: { type: string, minLength: 2, maxLength: 2 }
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Riesgo pais sintetico
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RiesgoPais' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TransientError' }
+        '500': { $ref: '#/components/responses/TransientError' }
+        '503': { $ref: '#/components/responses/TransientError' }
+  /api/v1/beneficiario-final/{ruc}:
+    get:
+      operationId: consultarBeneficiarioFinal
+      parameters:
+        - name: ruc
+          in: path
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 30 }
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Beneficiario final sintetico
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BeneficiarioFinal' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TransientError' }
+        '500': { $ref: '#/components/responses/TransientError' }
+        '503': { $ref: '#/components/responses/TransientError' }
+  /api/v1/proveedores/estado:
+    get:
+      operationId: consultarEstadoProveedores
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Estado sintetico de proveedores
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EstadoProveedores' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 components:
   securitySchemes:
     ApiKey:
@@ -105,6 +243,76 @@ components:
       properties:
         pep: { type: boolean }
         nivelExposicion: { type: string, enum: [NINGUNO, MEDIO, ALTO] }
+    PerfilCliente:
+      type: object
+      required: [documentoHashReferencia, estadoApi, nivelRiesgo, personal, laboral, academico, familiar, judicialRegulatorio]
+      additionalProperties: true
+      properties:
+        documentoHashReferencia: { type: string }
+        estadoApi: { type: string }
+        nivelRiesgo: { type: string, enum: [BAJO, MEDIO, ALTO, CRITICO] }
+        personal: { type: object, additionalProperties: true }
+        laboral: { type: object, additionalProperties: true }
+        academico: { type: object, additionalProperties: true }
+        familiar: { type: object, additionalProperties: true }
+        judicialRegulatorio: { type: object, additionalProperties: true }
+    DocumentosCliente:
+      type: object
+      required: [documentoHashReferencia, documentos, mensaje]
+      properties:
+        documentoHashReferencia: { type: string }
+        documentos:
+          type: array
+          items: { type: object, additionalProperties: true }
+        mensaje: { type: string }
+    HistorialTransaccional:
+      type: object
+      required: [documentoHashReferencia, cantidad, transacciones]
+      properties:
+        documentoHashReferencia: { type: string }
+        cantidad: { type: integer }
+        transacciones:
+          type: array
+          items: { type: object, additionalProperties: true }
+    ScreeningListas:
+      type: object
+      required: [documentoHashReferencia, resultado, nivelRiesgo, hallazgos, fuentes, mensaje]
+      properties:
+        documentoHashReferencia: { type: string }
+        resultado: { type: string, enum: [SIN_COINCIDENCIAS, CON_COINCIDENCIAS] }
+        nivelRiesgo: { type: string }
+        hallazgos:
+          type: array
+          items: { type: string }
+        fuentes:
+          type: array
+          items: { type: string }
+        mensaje: { type: string }
+    RiesgoPais:
+      type: object
+      required: [codigoIso, categoria, nivelRiesgo, fuentes, observacion]
+      properties:
+        codigoIso: { type: string }
+        categoria: { type: string }
+        nivelRiesgo: { type: string }
+        fuentes:
+          type: array
+          items: { type: string }
+        observacion: { type: string }
+    BeneficiarioFinal:
+      type: object
+      required: [rucHashReferencia, razonSocial, beneficiarios, fuente, mensaje]
+      properties:
+        rucHashReferencia: { type: string }
+        razonSocial: { type: string }
+        beneficiarios:
+          type: array
+          items: { type: object, additionalProperties: true }
+        fuente: { type: string }
+        mensaje: { type: string }
+    EstadoProveedores:
+      type: object
+      additionalProperties: true
     Error:
       type: object
       required: [codigo, mensaje, correlationId]

@@ -9,8 +9,17 @@ La fuente de verdad es `openapi/regula-external-services-v1.yaml`:
 - `GET /api/v1/identidades/{documento}`
 - `GET /api/v1/sanciones/{documento}`
 - `GET /api/v1/personas-expuestas/{documento}`
+- `GET /api/v1/clientes/{documento}/perfil`
+- `GET /api/v1/clientes/{documento}/documentos`
+- `GET /api/v1/clientes/{documento}/historial-transaccional`
+- `GET /api/v1/screening-listas/{documento}`
+- `GET /api/v1/riesgo-pais/{codigoIso}`
+- `GET /api/v1/beneficiario-final/{ruc}`
+- `GET /api/v1/proveedores/estado`
 
 Todos requieren `X-API-Key`; el endpoint `/admin/v1/auditoria` exige una credencial administrativa distinta. `X-Correlation-Id` se conserva o se genera.
+
+El analisis funcional de APIs esperadas esta en `docs/APIS_EXTERNAS_ESPERADAS_REGULA.md`.
 
 ## Escenarios
 
