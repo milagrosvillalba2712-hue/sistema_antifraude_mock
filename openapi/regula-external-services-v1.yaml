@@ -251,11 +251,86 @@ components:
         documentoHashReferencia: { type: string }
         estadoApi: { type: string }
         nivelRiesgo: { type: string, enum: [BAJO, MEDIO, ALTO, CRITICO] }
-        personal: { type: object, additionalProperties: true }
-        laboral: { type: object, additionalProperties: true }
-        academico: { type: object, additionalProperties: true }
-        familiar: { type: object, additionalProperties: true }
-        judicialRegulatorio: { type: object, additionalProperties: true }
+        personal:
+          type: object
+          required: [nombreCompleto, tipoDocumento, documentoEnmascarado, fechaNacimiento, fechaEmisionDocumento, fechaExpiracionDocumento, paisEmisionDocumento, paisResidencia, paisNacionalidad, ciudadResidencia, departamentoResidencia, direccionResidencia, telefonoFijoEnmascarado, telefonoMovilEnmascarado, email, edad]
+          additionalProperties: true
+          properties:
+            nombreCompleto: { type: string }
+            tipoDocumento: { type: string, example: CI_PY }
+            documentoEnmascarado: { type: string }
+            fechaNacimiento: { type: string, format: date }
+            fechaEmisionDocumento: { type: string, format: date }
+            fechaExpiracionDocumento: { type: string, format: date }
+            paisEmisionDocumento: { type: string, example: PY }
+            paisResidencia: { type: string, example: PY }
+            paisNacionalidad: { type: string, example: PY }
+            ciudadResidencia: { type: string }
+            departamentoResidencia: { type: string }
+            direccionResidencia: { type: string }
+            telefonoFijoEnmascarado: { type: string }
+            telefonoMovilEnmascarado: { type: string }
+            email: { type: string, format: email }
+            edad: { type: integer }
+            fotoDocumentoFrenteReferencia: { type: string }
+            fotoDocumentoDorsoReferencia: { type: string }
+            fotoPerfilReferencia: { type: string }
+        laboral:
+          type: object
+          required: [lugarTrabajo, direccionTrabajo, contactoCorporativo, ocupacion, rango, antiguedad, ingresoMensualEstimado]
+          additionalProperties: true
+          properties:
+            lugarTrabajo: { type: string }
+            direccionTrabajo: { type: string }
+            contactoCorporativo: { type: string }
+            ocupacion: { type: string }
+            rango: { type: string }
+            antiguedad: { type: string }
+            ingresoMensualEstimado: { type: number }
+        academico:
+          type: object
+          required: [nivelEstudios, titulosObtenidos, institucionEducativa, periodoCursada, calificacionesExpedientes, logrosDestacados, certificacionesCursos]
+          additionalProperties: true
+          properties:
+            nivelEstudios: { type: string }
+            titulosObtenidos:
+              type: array
+              items: { type: string }
+            institucionEducativa: { type: string }
+            periodoCursada: { type: string }
+            calificacionesExpedientes: { type: string }
+            logrosDestacados:
+              type: array
+              items: { type: string }
+            certificacionesCursos:
+              type: array
+              items: { type: string }
+        familiar:
+          type: object
+          required: [estadoCivil, parentescosDirectos, contactoEmergencia, direccionContactoEmergencia]
+          additionalProperties: true
+          properties:
+            estadoCivil: { type: string }
+            parentescosDirectos:
+              type: array
+              items: { type: object, additionalProperties: true }
+            contactoEmergencia: { type: string }
+            direccionContactoEmergencia: { type: string }
+        judicialRegulatorio:
+          type: object
+          required: [antecedentesPenales, procesosJudicialesActivos, ordenesRequerimientos, historialLitigios, pep, sancionado, nivelRiesgo, hallazgos]
+          additionalProperties: true
+          properties:
+            antecedentesPenales: { type: boolean }
+            procesosJudicialesActivos: { type: string }
+            ordenesRequerimientos: { type: string }
+            historialLitigios: { type: string }
+            pep: { type: boolean }
+            sancionado: { type: boolean }
+            nivelRiesgo: { type: string }
+            hallazgos:
+              type: array
+              items: { type: string }
     DocumentosCliente:
       type: object
       required: [documentoHashReferencia, documentos, mensaje]
@@ -263,7 +338,16 @@ components:
         documentoHashReferencia: { type: string }
         documentos:
           type: array
-          items: { type: object, additionalProperties: true }
+          items:
+            type: object
+            required: [tipo, estado, referencia]
+            additionalProperties: true
+            properties:
+              tipo: { type: string }
+              estado: { type: string }
+              frenteDisponible: { type: boolean }
+              dorsoDisponible: { type: boolean }
+              referencia: { type: string }
         mensaje: { type: string }
     HistorialTransaccional:
       type: object
