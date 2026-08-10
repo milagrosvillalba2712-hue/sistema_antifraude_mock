@@ -10,8 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
@@ -123,6 +125,20 @@ public class ExternalServicesController {
                 "documentos", "DISPONIBLE",
                 "historialTransaccional", "DISPONIBLE",
                 "timestamp", OffsetDateTime.now(ZoneOffset.UTC).toString()
+        ));
+    }
+
+    @PostMapping("/licencias/validar")
+    public ResponseEntity<?> validarLicencia(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        String instalacionId = String.valueOf(body.getOrDefault("instalacionId", "desconocida"));
+        String fingerprint = String.valueOf(body.getOrDefault("fingerprintHash", ""));
+        return execute("LICENCIA_VALIDACION", instalacionId, request, Map.of(
+                "instalacionIdHash", "sha256-demo-" + scenarios.normalizedScenario(instalacionId),
+                "fingerprintMatch", fingerprint.startsWith("sha256-demo-") || fingerprint.length() >= 64,
+                "estado", "VALIDO",
+                "plan", "ESTANDAR",
+                "vence", OffsetDateTime.now(ZoneOffset.UTC).plusDays(15).toString(),
+                "mensaje", "Validacion de licencia simulada; no es una autorizacion criptografica real"
         ));
     }
 
