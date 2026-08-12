@@ -76,8 +76,23 @@ class ExternalServicesContractTest {
         mvc.perform(get("/api/v1/clientes/400/perfil").header("X-API-Key", "operational-test-key"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nivelRiesgo").value("CRITICO"))
+                .andExpect(jsonPath("$.personal.tipoDocumento").value("CI_PY"))
+                .andExpect(jsonPath("$.personal.fechaNacimiento").value("1988-05-20"))
+                .andExpect(jsonPath("$.personal.fechaEmisionDocumento").value("2021-03-15"))
+                .andExpect(jsonPath("$.personal.fechaExpiracionDocumento").value("2031-03-15"))
+                .andExpect(jsonPath("$.personal.paisResidencia").value("PY"))
+                .andExpect(jsonPath("$.laboral.lugarTrabajo").value("Servicios Sinteticos del Paraguay S.A."))
+                .andExpect(jsonPath("$.academico.titulosObtenidos.length()").value(1))
+                .andExpect(jsonPath("$.familiar.parentescosDirectos.length()").value(2))
                 .andExpect(jsonPath("$.judicialRegulatorio.pep").value(true))
                 .andExpect(jsonPath("$.judicialRegulatorio.sancionado").value(true));
+
+        mvc.perform(get("/api/v1/clientes/400/documentos").header("X-API-Key", "operational-test-key"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.documentos.length()").value(2))
+                .andExpect(jsonPath("$.documentos[0].tipo").value("CI_PY"))
+                .andExpect(jsonPath("$.documentos[0].frenteDisponible").value(true))
+                .andExpect(jsonPath("$.documentos[0].dorsoDisponible").value(true));
 
         mvc.perform(get("/api/v1/clientes/100/historial-transaccional?limit=15").header("X-API-Key", "operational-test-key"))
                 .andExpect(status().isOk())

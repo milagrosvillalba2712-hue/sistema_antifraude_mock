@@ -10,8 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
@@ -126,6 +128,20 @@ public class ExternalServicesController {
         ));
     }
 
+    @PostMapping("/licencias/validar")
+    public ResponseEntity<?> validarLicencia(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        String instalacionId = String.valueOf(body.getOrDefault("instalacionId", "desconocida"));
+        String fingerprint = String.valueOf(body.getOrDefault("fingerprintHash", ""));
+        return execute("LICENCIA_VALIDACION", instalacionId, request, Map.of(
+                "instalacionIdHash", "sha256-demo-" + scenarios.normalizedScenario(instalacionId),
+                "fingerprintMatch", fingerprint.startsWith("sha256-demo-") || fingerprint.length() >= 64,
+                "estado", "VALIDO",
+                "plan", "ESTANDAR",
+                "vence", OffsetDateTime.now(ZoneOffset.UTC).plusDays(15).toString(),
+                "mensaje", "Validacion de licencia simulada; no es una autorizacion criptografica real"
+        ));
+    }
+
     private ResponseEntity<?> execute(String provider, String document, HttpServletRequest request, Object response) {
         long start = System.nanoTime();
         String correlation = (String) request.getAttribute("correlationId");
@@ -151,38 +167,85 @@ public class ExternalServicesController {
         result.put("documentoHashReferencia", "sha256-demo-" + scenario);
         result.put("estadoApi", "DISPONIBLE_SIMULADO");
         result.put("nivelRiesgo", scenarios.riskLevel(document));
-        result.put("personal", Map.of(
-                "nombreCompleto", "Persona Sintetica " + scenario,
-                "tipoDocumento", "CI_PY",
-                "documentoEnmascarado", "***" + scenario,
-                "fechaNacimiento", LocalDate.of(1988, 5, 20).toString(),
-                "paisResidencia", "PY",
-                "paisNacionalidad", "PY",
-                "email", "persona." + scenario + "@example.invalid",
-                "telefonoMovilEnmascarado", "+595 981 *** " + scenario
-        ));
-        result.put("laboral", Map.of(
-                "ocupacion", "Servicios profesionales",
-                "lugarTrabajo", "Empresa Sintetica",
-                "rango", "Dependiente",
-                "ingresoMensualEstimado", 8500000
-        ));
-        result.put("academico", Map.of(
-                "nivel", "Universitario",
-                "institucion", "Universidad Sintetica",
-                "certificaciones", List.of("Cumplimiento Basico Demo")
-        ));
-        result.put("familiar", Map.of(
-                "estadoCivil", "No verificado",
-                "contactoEmergencia", "Contacto sintetico"
-        ));
-        result.put("judicialRegulatorio", Map.of(
-                "antecedentes", scenarios.hasAntecedentes(document),
-                "pep", scenarios.pep(document),
-                "sancionado", scenarios.sanctioned(document),
-                "hallazgos", scenarios.findings(document)
-        ));
+        result.put("personal", personalProfile(scenario));
+        result.put("laboral", workProfile(scenario));
+        result.put("academico", academicProfile(scenario));
+        result.put("familiar", familyProfile(scenario));
+        result.put("judicialRegulatorio", judicialProfile(document));
         return result;
+    }
+
+    private Map<String, Object> personalProfile(String scenario) {
+        Map<String, Object> personal = new LinkedHashMap<>();
+        personal.put("nombreCompleto", "Persona Sintetica " + scenario);
+        personal.put("tipoDocumento", "CI_PY");
+        personal.put("documentoEnmascarado", "***" + scenario);
+        personal.put("fechaNacimiento", LocalDate.of(1988, 5, 20).toString());
+        personal.put("fechaEmisionDocumento", LocalDate.of(2021, 3, 15).toString());
+        personal.put("fechaExpiracionDocumento", LocalDate.of(2031, 3, 15).toString());
+        personal.put("paisEmisionDocumento", "PY");
+        personal.put("paisResidencia", "PY");
+        personal.put("paisNacionalidad", "PY");
+        personal.put("ciudadResidencia", "Asuncion");
+        personal.put("departamentoResidencia", "Capital");
+        personal.put("direccionResidencia", "Avda. Sintetica 1234, Barrio Demo");
+        personal.put("telefonoFijoEnmascarado", "+595 21 *** " + scenario);
+        personal.put("telefonoMovilEnmascarado", "+595 981 *** " + scenario);
+        personal.put("email", "persona." + scenario + "@example.invalid");
+        personal.put("edad", 38);
+        personal.put("fotoDocumentoFrenteReferencia", "mock/ci-" + scenario + "-frente");
+        personal.put("fotoDocumentoDorsoReferencia", "mock/ci-" + scenario + "-dorso");
+        personal.put("fotoPerfilReferencia", "mock/perfil-" + scenario);
+        return personal;
+    }
+
+    private Map<String, Object> workProfile(String scenario) {
+        Map<String, Object> laboral = new LinkedHashMap<>();
+        laboral.put("lugarTrabajo", "Servicios Sinteticos del Paraguay S.A.");
+        laboral.put("direccionTrabajo", "Calle Laboral 456, Asuncion");
+        laboral.put("contactoCorporativo", "rrhh." + scenario + "@empresa.example.invalid");
+        laboral.put("ocupacion", "Servicios profesionales");
+        laboral.put("rango", "Dependiente");
+        laboral.put("antiguedad", "6 anos");
+        laboral.put("ingresoMensualEstimado", 8500000);
+        return laboral;
+    }
+
+    private Map<String, Object> academicProfile(String scenario) {
+        Map<String, Object> academico = new LinkedHashMap<>();
+        academico.put("nivelEstudios", "Universitario");
+        academico.put("titulosObtenidos", List.of("Licenciatura Demo En Administracion"));
+        academico.put("institucionEducativa", "Universidad Sintetica");
+        academico.put("periodoCursada", "2010-2015");
+        academico.put("calificacionesExpedientes", "No integrado; metadata disponible bajo solicitud");
+        academico.put("logrosDestacados", List.of("Beca academica sintetica"));
+        academico.put("certificacionesCursos", List.of("Cumplimiento Basico Demo", "Finanzas Personales Demo"));
+        return academico;
+    }
+
+    private Map<String, Object> familyProfile(String scenario) {
+        Map<String, Object> familiar = new LinkedHashMap<>();
+        familiar.put("estadoCivil", "Casado");
+        familiar.put("parentescosDirectos", List.of(
+                Map.of("nombre", "Familiar Sintetico A", "parentesco", "Conyuge", "edad", 37, "ocupacion", "Docencia"),
+                Map.of("nombre", "Familiar Sintetico B", "parentesco", "Hijo/a", "edad", 9, "ocupacion", "Estudiante")
+        ));
+        familiar.put("contactoEmergencia", "+595 981 *** " + scenario);
+        familiar.put("direccionContactoEmergencia", "Avda. Familiar 789, Asuncion");
+        return familiar;
+    }
+
+    private Map<String, Object> judicialProfile(String document) {
+        Map<String, Object> judicial = new LinkedHashMap<>();
+        judicial.put("antecedentesPenales", scenarios.hasAntecedentes(document));
+        judicial.put("procesosJudicialesActivos", scenarios.hasAntecedentes(document) ? "Revision sintetica requerida" : "Sin procesos simulados");
+        judicial.put("ordenesRequerimientos", "Sin ordenes simuladas vigentes");
+        judicial.put("historialLitigios", "Sin litigios simulados relevantes");
+        judicial.put("pep", scenarios.pep(document));
+        judicial.put("sancionado", scenarios.sanctioned(document));
+        judicial.put("nivelRiesgo", scenarios.riskLevel(document));
+        judicial.put("hallazgos", scenarios.findings(document));
+        return judicial;
     }
 
     private Map<String, Object> documents(String document) {
