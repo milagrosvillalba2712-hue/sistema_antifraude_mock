@@ -142,6 +142,77 @@ public class ExternalServicesController {
         ));
     }
 
+    @PostMapping("/telemetry/heartbeat")
+    public ResponseEntity<?> heartbeatLicencia(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        String instalacionId = String.valueOf(body.getOrDefault("instalacionId", "desconocida"));
+        return execute("CONTROL_PLANE_HEARTBEAT", instalacionId, request, Map.of(
+                "instalacionIdHash", "sha256-demo-" + scenarios.normalizedScenario(instalacionId),
+                "estado", "OPERATIVA",
+                "leaseRenewalAvailable", true,
+                "serverTime", OffsetDateTime.now(ZoneOffset.UTC).toString(),
+                "mensaje", "Heartbeat sintetico recibido por Control Plane mock"
+        ));
+    }
+
+    @PostMapping("/telemetry/usage")
+    public ResponseEntity<?> reportarUso(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        String instalacionId = String.valueOf(body.getOrDefault("instalacionId", "desconocida"));
+        return execute("CONTROL_PLANE_USAGE", instalacionId, request, Map.of(
+                "instalacionIdHash", "sha256-demo-" + scenarios.normalizedScenario(instalacionId),
+                "estado", "RECIBIDO",
+                "periodo", body.getOrDefault("periodo", "demo"),
+                "mensaje", "Consumo agregado sintetico registrado"
+        ));
+    }
+
+    @GetMapping("/catalogs/manifest")
+    public ResponseEntity<?> catalogManifest(HttpServletRequest request) {
+        return execute("CONTROL_PLANE_CATALOG_MANIFEST", "100", request, Map.of(
+                "packageVersion", "2026.08-demo",
+                "generatedAt", OffsetDateTime.now(ZoneOffset.UTC).toString(),
+                "catalogs", List.of(
+                        catalogMeta("PAISES_ISO", "2026.08.01", "sha256-demo-paises", "/api/v1/catalogs/PAISES_ISO/versions/2026.08.01"),
+                        catalogMeta("MONEDAS_ISO", "2026.08.01", "sha256-demo-monedas", "/api/v1/catalogs/MONEDAS_ISO/versions/2026.08.01"),
+                        catalogMeta("PAISES_RIESGO", "2026.08.01", "sha256-demo-paises-riesgo", "/api/v1/catalogs/PAISES_RIESGO/versions/2026.08.01"),
+                        catalogMeta("LISTAS_RIESGO_DEMO", "2026.08.01", "sha256-demo-listas", "/api/v1/catalogs/LISTAS_RIESGO_DEMO/versions/2026.08.01")
+                ),
+                "mensaje", "Manifest sintetico para tesis; no representa publicacion oficial"
+        ));
+    }
+
+    @GetMapping("/catalogs/{code}/versions/{version}")
+    public ResponseEntity<?> catalogVersion(@PathVariable String code,
+                                            @PathVariable String version,
+                                            HttpServletRequest request) {
+        return execute("CONTROL_PLANE_CATALOG_VERSION", code, request, Map.of(
+                "code", code,
+                "version", version,
+                "hash", "sha256-demo-" + code.toLowerCase(),
+                "items", catalogItems(code),
+                "licenseNotice", "Datos sinteticos y metadatos publicos para demostracion academica"
+        ));
+    }
+
+    @GetMapping("/configuration/package")
+    public ResponseEntity<?> configurationPackage(HttpServletRequest request) {
+        return execute("CONTROL_PLANE_CONFIGURATION", "100", request, Map.of(
+                "plan", "ESTANDAR",
+                "modules", List.of("TRANSACCIONES", "ALERTAS", "KYC", "REGLAS", "REPORTES"),
+                "limits", Map.of(
+                        "users", 50,
+                        "transactionsMonth", 250000,
+                        "kycMonth", 10000,
+                        "reportsMonth", 1000,
+                        "rules", 40
+                ),
+                "jobs", Map.of(
+                        "heartbeatCron", "0 */15 * * * *",
+                        "usageSyncCron", "0 5 * * * *",
+                        "catalogSyncCron", "0 0 2 * * *"
+                )
+        ));
+    }
+
     private ResponseEntity<?> execute(String provider, String document, HttpServletRequest request, Object response) {
         long start = System.nanoTime();
         String correlation = (String) request.getAttribute("correlationId");
@@ -284,6 +355,33 @@ public class ExternalServicesController {
                 "cantidad", limit,
                 "transacciones", transactions
         );
+    }
+
+    private Map<String, Object> catalogMeta(String code, String version, String hash, String url) {
+        return Map.of("code", code, "version", version, "sha256", hash, "downloadUrl", url);
+    }
+
+    private List<Map<String, Object>> catalogItems(String code) {
+        return switch (code.toUpperCase()) {
+            case "PAISES_ISO" -> List.of(
+                    Map.of("codigoIso", "PY", "nombre", "Paraguay", "estado", "ACTIVO"),
+                    Map.of("codigoIso", "BR", "nombre", "Brasil", "estado", "ACTIVO"),
+                    Map.of("codigoIso", "AR", "nombre", "Argentina", "estado", "ACTIVO")
+            );
+            case "MONEDAS_ISO" -> List.of(
+                    Map.of("codigoIso", "PYG", "nombre", "Guarani paraguayo", "estado", "ACTIVO"),
+                    Map.of("codigoIso", "USD", "nombre", "Dolar estadounidense", "estado", "ACTIVO"),
+                    Map.of("codigoIso", "BRL", "nombre", "Real brasileno", "estado", "ACTIVO")
+            );
+            case "PAISES_RIESGO" -> List.of(
+                    Map.of("codigoIso", "ZA", "nivel", "ALTO", "fuente", "FATF_DEMO"),
+                    Map.of("codigoIso", "AE", "nivel", "MEDIO", "fuente", "GAFILAT_DEMO")
+            );
+            default -> List.of(
+                    Map.of("codigo", "LISTA_INTERNA_DEMO", "tipo", "SUJETO_RIESGO", "estado", "ACTIVO"),
+                    Map.of("codigo", "PEP_RELACIONADO_DEMO", "tipo", "PEP_RELACIONADO", "estado", "ACTIVO")
+            );
+        };
     }
 
     private boolean isHighRiskCountry(String codigoIso) {
