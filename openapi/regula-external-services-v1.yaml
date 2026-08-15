@@ -225,6 +225,89 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ValidacionLicenciaResponse' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/telemetry/heartbeat:
+    post:
+      operationId: reportarHeartbeat
+      description: Heartbeat sintetico de instalacion on-premise hacia Control Plane mock.
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Heartbeat recibido
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/telemetry/usage:
+    post:
+      operationId: reportarUsoAgregado
+      description: Reporte sintetico de consumo agregado hacia Control Plane mock.
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Consumo recibido
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/catalogs/manifest:
+    get:
+      operationId: obtenerManifestCatalogos
+      description: Manifest sintetico de catalogos versionados.
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Manifest de catalogos
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/catalogs/{code}/versions/{version}:
+    get:
+      operationId: descargarCatalogoVersionado
+      description: Descarga sintetica de catalogo versionado.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema: { type: string }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Catalogo sintetico versionado
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/configuration/package:
+    get:
+      operationId: obtenerPaqueteConfiguracion
+      description: Paquete sintetico de configuracion por plan para demo.
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Paquete de configuracion
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 components:
   securitySchemes:
     ApiKey:
